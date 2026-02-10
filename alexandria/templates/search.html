@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Search — Alexandria{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold text-ink-900 mb-6">Search the Library</h1>
+
+    <!-- Search form -->
+    <form action="/search" method="GET" class="mb-8" x-data="{ advanced: false }">
+        <div class="flex gap-3">
+            <div class="flex-1 relative">
+                <input type="text" name="q" value="{{ query or '' }}" placeholder="Search by topic, keyword, or question..." 
+                    class="w-full pl-10 pr-4 py-3 border border-ink-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-alexandria-500 focus:border-transparent bg-white shadow-sm">
+                <svg class="absolute left-3 top-3.5 w-4 h-4 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            <button type="submit" class="px-6 py-3 bg-alexandria-600 text-white rounded-xl text-sm font-medium hover:bg-alexandria-700 transition shadow-sm">Search</button>
+        </div>
+
+        <!-- Filters toggle -->
+        <button type="button" @click="advanced = !advanced" class="mt-3 text-xs text-ink-500 hover:text-ink-700 flex items-center">
+            <svg class="w-3 h-3 mr-1 transition" :class="{ 'rotate-90': advanced }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            Filters
+        </button>
+
+        <!-- Advanced filters -->
+        <div x-show="advanced" x-cloak class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+                <label class="block text-xs font-medium text-ink-500 mb-1">Domain</label>
+                <input type="text" name="domain" value="{{ domain or '' }}" placeholder="e.g. computer_science" class="w-full px-3 py-2 border border-ink-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-alexandria-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-ink-500 mb-1">Type</label>
+                <select name="type" class="w-full px-3 py-2 border border-ink-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-alexandria-500 bg-white">
+                    <option value="">All types</option>
+                    <option value="paper" {% if type_filter == 'paper' %}selected{% endif %}>Paper</option>
+                    <option value="hypothesis" {% if type_filter == 'hypothesis' %}selected{% endif %}>Hypothesis</option>
+                    <option value="meta_analysis" {% if type_filter == 'meta_analysis' %}selected{% endif %}>Meta Analysis</option>
+                    <option value="rebuttal" {% if type_filter == 'rebuttal' %}selected{% endif %}>Rebuttal</option>
+                    <option value="tutorial" {% if type_filter == 'tutorial' %}selected{% endif %}>Tutorial</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-ink-500 mb-1">Status</label>
+                <select name="status" class="w-full px-3 py-2 border border-ink-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-alexandria-500 bg-white">
+                    <option value="">All statuses</option>
+                    <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
+                    <option value="under_review" {% if status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
+                    <option value="submitted" {% if status_filter == 'submitted' %}selected{% endif %}>Submitted</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-ink-500 mb-1">Results</label>
+                <select name="limit" class="w-full px-3 py-2 border border-ink-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-alexandria-500 bg-white">
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <!-- Results -->
+    {% if results is not none %}
+    <div class="mb-4 text-sm text-ink-500">
+        {{ results | length }} result{{ 's' if results | length != 1 else '' }} for "<strong class="text-ink-700">{{ query }}</strong>"
+    </div>
+    <div class="space-y-3">
+        {% for r in results %}
+        <a href="/scroll/{{ r.scroll_id }}" class="block bg-white rounded-xl border border-ink-200 shadow-sm p-5 hover:border-alexandria-300 transition group">
+            <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-sm font-semibold text-ink-900 group-hover:text-alexandria-700 transition">{{ r.title }}</h3>
+                    <div class="flex items-center space-x-3 mt-1.5">
+                        {% if r.scroll_type %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-alexandria-50 text-alexandria-700">{{ r.scroll_type }}</span>
+                        {% endif %}
+                        {% if r.domain %}
+                        <span class="text-xs text-ink-400">{{ r.domain }}</span>
+                        {% endif %}
+                        <code class="text-xs text-ink-400 font-mono">{{ r.scroll_id }}</code>
+                    </div>
+                    {% if r.abstract %}
+                    <p class="text-xs text-ink-500 mt-2 line-clamp-2">{{ r.abstract[:250] }}{% if r.abstract|length > 250 %}...{% endif %}</p>
+                    {% endif %}
+                </div>
+                {% if r.relevance_score is defined and r.relevance_score %}
+                <div class="ml-4">
+                    <div class="text-xs text-ink-400">Relevance</div>
+                    <div class="text-lg font-bold text-alexandria-600">{{ '%.0f' | format(r.relevance_score * 100) }}%</div>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results is not none and results | length == 0 %}
+    <div class="text-center py-12 text-ink-400">
+        <svg class="w-12 h-12 mx-auto mb-3 text-ink-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <p class="text-sm">No results found. Try a different query or broaden your filters.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

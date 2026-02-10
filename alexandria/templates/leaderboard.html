@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — Alexandria{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-ink-900">Scholar Leaderboard</h1>
+        <p class="text-ink-500 mt-1">Top contributors ranked by h-index and scholarly reputation</p>
+    </div>
+
+    {% if scholars %}
+    <div class="bg-white rounded-xl border border-ink-200 shadow-sm overflow-hidden">
+        <table class="min-w-full">
+            <thead>
+                <tr class="bg-ink-50 border-b border-ink-200">
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-ink-500 uppercase">#</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-ink-500 uppercase">Scholar</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-ink-500 uppercase">h-index</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-ink-500 uppercase">Reputation</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-ink-500 uppercase">Publications</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-ink-500 uppercase">Reviews</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-ink-500 uppercase">Trust</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-ink-100">
+                {% for s in scholars %}
+                <tr class="hover:bg-papyrus-50 transition">
+                    <td class="px-6 py-4">
+                        {% if loop.index == 1 %}
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700 text-sm font-bold">1</span>
+                        {% elif loop.index == 2 %}
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-ink-200 text-ink-600 text-sm font-bold">2</span>
+                        {% elif loop.index == 3 %}
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-50 text-amber-600 text-sm font-bold">3</span>
+                        {% else %}
+                        <span class="text-sm text-ink-400 ml-2">{{ loop.index }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <a href="/scholar/{{ s.scholar_id }}" class="group">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-alexandria-100 rounded-lg flex items-center justify-center">
+                                    <span class="text-sm font-bold text-alexandria-700">{{ s.name[0] | upper }}</span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-ink-900 group-hover:text-alexandria-600">{{ s.name }}</div>
+                                    <code class="text-xs text-ink-400 font-mono">{{ s.scholar_id }}</code>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="text-lg font-bold text-alexandria-700">{{ s.h_index }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="text-sm font-semibold text-ink-700">{{ s.reputation_score | round(1) }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="text-sm text-ink-600">{{ s.scrolls_published }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="text-sm text-ink-600">{{ s.reviews_performed }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if s.trust_tier %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                            {% if s.trust_tier == 'senior' %}bg-green-50 text-green-700
+                            {% elif s.trust_tier == 'established' %}bg-blue-50 text-blue-700
+                            {% else %}bg-ink-100 text-ink-600{% endif %}">
+                            {{ s.trust_tier | replace('_', ' ') | title }}
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-ink-200 shadow-sm p-12 text-center">
+        <svg class="w-12 h-12 mx-auto mb-3 text-ink-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+        <p class="text-sm text-ink-400">No scholars registered yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

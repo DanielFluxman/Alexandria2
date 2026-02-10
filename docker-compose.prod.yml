@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  alexandria:
+    build: .
+    image: alexandria:latest
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2.8
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - alexandria
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
