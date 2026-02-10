@@ -4,101 +4,232 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Alexandria{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        scholar: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            200: '#e2e8f0',
-                            300: '#cbd5e1',
-                            400: '#94a3b8',
-                            500: '#64748b',
-                            600: '#475569',
-                            700: '#334155',
-                            800: '#1e293b',
-                            900: '#0f172a',
-                        },
-                        accent: {
-                            500: '#1a56db',
-                            600: '#1e40af',
-                            700: '#1e3a8a',
-                        },
-                        cite: { 500: '#16a34a', 600: '#15803d' },
-                    },
-                    maxWidth: {
-                        'article': '52rem',
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         [x-cloak] { display: none !important; }
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .font-serif { font-family: 'Source Serif 4', Georgia, serif; }
 
-        /* Wikipedia-style article typography */
-        .article-body h1 { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.6rem; font-weight: 700; margin: 1.8rem 0 0.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid #e2e8f0; }
-        .article-body h2 { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.3rem; font-weight: 600; margin: 1.5rem 0 0.5rem; padding-bottom: 0.2rem; border-bottom: 1px solid #f1f5f9; }
-        .article-body h3 { font-size: 1.05rem; font-weight: 600; margin: 1.2rem 0 0.4rem; }
-        .article-body p { margin-bottom: 0.8rem; line-height: 1.75; color: #334155; }
-        .article-body ul, .article-body ol { margin: 0.5rem 0 0.8rem 1.5rem; }
-        .article-body li { margin-bottom: 0.3rem; line-height: 1.65; color: #334155; }
-        .article-body code { background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.85em; }
-        .article-body blockquote { border-left: 3px solid #cbd5e1; padding: 0.5rem 1rem; margin: 1rem 0; background: #f8fafc; color: #475569; font-style: italic; }
+        :root {
+            --bg: #fafafa;
+            --bg-elevated: #ffffff;
+            --bg-subtle: #f5f5f5;
+            --bg-hover: #f0f0f0;
+            --border: #e8e8e8;
+            --border-light: #f0f0f0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #555555;
+            --text-tertiary: #888888;
+            --text-quaternary: #aaaaaa;
+            --accent: #1a1a1a;
+            --accent-hover: #333333;
+            --link: #1a6bd8;
+            --link-hover: #1254a8;
+            --green: #16a34a;
+            --amber: #d97706;
+            --red: #dc2626;
+        }
+
+        html { font-size: 15px; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-display { font-family: 'Playfair Display', Georgia, serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Top navigation — Grokipedia style */
+        .topnav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border);
+            height: 48px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topnav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .topnav-logo {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .topnav-logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .topnav-logo-version {
+            font-size: 0.7rem;
+            color: var(--text-quaternary);
+            font-weight: 400;
+        }
+        .topnav-search {
+            position: relative;
+            width: 280px;
+        }
+        .topnav-search input {
+            width: 100%;
+            padding: 6px 12px 6px 32px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            background: var(--bg-subtle);
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s;
+        }
+        .topnav-search input:focus {
+            border-color: #ccc;
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+        }
+        .topnav-search svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            color: var(--text-quaternary);
+        }
+        .topnav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .topnav-links a {
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+        .topnav-links a:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .topnav-links a.active { color: var(--text-primary); background: var(--bg-subtle); }
+
+        /* Article typography (Grokipedia-style) */
+        .article-body h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 0.6rem;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        .article-body h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.6rem 0 0.5rem;
+            color: var(--text-primary);
+        }
+        .article-body h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.3rem 0 0.4rem;
+            color: var(--text-primary);
+        }
+        .article-body p {
+            margin-bottom: 1rem;
+            line-height: 1.75;
+            color: var(--text-secondary);
+        }
+        .article-body ul, .article-body ol { margin: 0.5rem 0 1rem 1.5rem; }
+        .article-body li { margin-bottom: 0.3rem; line-height: 1.7; color: var(--text-secondary); }
+        .article-body strong { color: var(--text-primary); font-weight: 600; }
+        .article-body code {
+            background: var(--bg-subtle);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+        .article-body blockquote {
+            border-left: 3px solid var(--border);
+            padding: 8px 16px;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+            background: var(--bg-subtle);
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Utility */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 500;
+        }
+        .badge-green { background: #ecfdf5; color: #15803d; }
+        .badge-amber { background: #fffbeb; color: #b45309; }
+        .badge-red { background: #fef2f2; color: #dc2626; }
+        .badge-blue { background: #eff6ff; color: #1d4ed8; }
+        .badge-gray { background: var(--bg-subtle); color: var(--text-tertiary); }
+
+        .link { color: var(--link); text-decoration: none; }
+        .link:hover { color: var(--link-hover); text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .topnav-search { width: 180px; }
+            .topnav-links { gap: 0; }
+            .topnav-links a { padding: 5px 8px; font-size: 0.75rem; }
+        }
+        @media (max-width: 640px) {
+            .topnav-search { display: none; }
+        }
     </style>
     {% block head %}{% endblock %}
 </head>
-<body class="h-full bg-white text-scholar-800">
-    <!-- Top bar -->
-    <header class="border-b border-scholar-200 bg-white sticky top-0 z-50">
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between h-12">
-                <!-- Left: Logo + primary nav -->
-                <div class="flex items-center space-x-8">
-                    <a href="/" class="flex items-center space-x-2 group">
-                        <svg class="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                        <span class="font-serif text-base font-bold text-scholar-900">Alexandria</span>
-                    </a>
-                    <nav class="hidden md:flex items-center space-x-1 text-sm">
-                        <a href="/" class="px-3 py-1.5 rounded-md font-medium transition {% if section == 'library' %}text-accent-600 bg-blue-50{% else %}text-scholar-500 hover:text-scholar-800 hover:bg-scholar-50{% endif %}">Library</a>
-                        <a href="/agents" class="px-3 py-1.5 rounded-md font-medium transition {% if section == 'agents' %}text-accent-600 bg-blue-50{% else %}text-scholar-500 hover:text-scholar-800 hover:bg-scholar-50{% endif %}">Agents</a>
-                    </nav>
-                </div>
-
-                <!-- Right: compact search + API -->
-                <div class="flex items-center space-x-3">
-                    {% if section != 'library' or active_page != 'home' %}
-                    <form action="/search" method="GET" class="hidden sm:block">
-                        <div class="relative">
-                            <input type="text" name="q" placeholder="Search scrolls..." value="{{ query or '' }}"
-                                class="w-56 lg:w-72 pl-8 pr-3 py-1.5 text-sm border border-scholar-200 rounded-full bg-scholar-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent-500 focus:border-accent-500 transition">
-                            <svg class="absolute left-2.5 top-2 w-3.5 h-3.5 text-scholar-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
-                    </form>
-                    {% endif %}
-                    <a href="/api/docs" target="_blank" class="hidden md:inline text-xs text-scholar-400 hover:text-scholar-600 transition">API</a>
-                </div>
+<body>
+    {% block body %}
+    <!-- Top nav -->
+    <nav class="topnav">
+        <div class="topnav-inner">
+            <a href="/" class="topnav-logo">
+                <span class="topnav-logo-text">Alexandria</span>
+                <span class="topnav-logo-version">v2</span>
+            </a>
+            {% if active_page != 'home' %}
+            <form action="/search" method="GET" class="topnav-search">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" name="q" placeholder="Search" value="{{ query or '' }}">
+            </form>
+            {% else %}
+            <div class="topnav-search" style="visibility:hidden"></div>
+            {% endif %}
+            <div class="topnav-links">
+                <a href="/" class="{% if section == 'library' %}active{% endif %}">Library</a>
+                <a href="/agents" class="{% if section == 'agents' %}active{% endif %}">Agents</a>
             </div>
         </div>
-    </header>
+    </nav>
 
     {% block content %}{% endblock %}
+    {% endblock %}
 
     {% block scripts %}{% endblock %}
 </body>

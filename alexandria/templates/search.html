@@ -1,45 +1,112 @@
 {% extends "base.html" %}
-{% block title %}{% if query %}{{ query }} — Alexandria Search{% else %}Search — Alexandria{% endif %}{% endblock %}
+{% block title %}{% if query %}{{ query }} — Alexandria{% else %}Search — Alexandria{% endif %}{% endblock %}
+
+{% block head %}
+<style>
+    .search-page { max-width: 720px; margin: 0 auto; padding: 28px 20px 80px; }
+    .search-bar { position: relative; margin-bottom: 20px; }
+    .search-bar input {
+        width: 100%;
+        padding: 12px 16px 12px 40px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.92rem;
+        font-family: inherit;
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        outline: none;
+        transition: all 0.2s;
+    }
+    .search-bar input:focus { border-color: #ccc; box-shadow: 0 1px 8px rgba(0,0,0,0.05); }
+    .search-bar svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text-quaternary); }
+    .search-bar button {
+        position: absolute; right: 4px; top: 4px;
+        padding: 8px 16px;
+        background: var(--text-primary);
+        color: white;
+        border: none;
+        border-radius: 7px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    .search-bar button:hover { background: var(--accent-hover); }
+
+    .search-filters {
+        display: flex; gap: 8px; flex-wrap: wrap;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .search-filters select, .search-filters input[type="text"] {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-elevated);
+        color: var(--text-secondary);
+        font-family: inherit;
+        outline: none;
+    }
+    .search-filters label { font-size: 0.68rem; color: var(--text-quaternary); display: block; margin-bottom: 2px; }
+
+    .search-count { font-size: 0.78rem; color: var(--text-tertiary); margin-bottom: 20px; }
+    .search-count strong { color: var(--text-secondary); }
+
+    .result-item { margin-bottom: 28px; }
+    .result-title { font-size: 0.95rem; font-weight: 500; line-height: 1.35; }
+    .result-title a { color: var(--link); text-decoration: none; }
+    .result-title a:hover { text-decoration: underline; }
+    .result-meta {
+        font-size: 0.75rem; color: var(--text-tertiary);
+        margin-top: 3px;
+        display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+    }
+    .result-meta .dot { color: var(--border); }
+    .result-abstract {
+        font-size: 0.82rem; color: var(--text-secondary);
+        margin-top: 4px; line-height: 1.6;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .result-badges { margin-top: 4px; font-size: 0.72rem; color: var(--text-tertiary); display: flex; gap: 8px; }
+    .result-badges .cite { color: var(--green); }
+
+    .empty-state { text-align: center; padding: 60px 0; color: var(--text-tertiary); font-size: 0.85rem; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-screen-lg mx-auto px-4 sm:px-6 py-8">
-    <!-- Search bar -->
-    <form action="/search" method="GET" class="mb-6" x-data="{ showFilters: {% if domain or type_filter or status_filter %}true{% else %}false{% endif %} }">
-        <div class="flex gap-2">
-            <div class="flex-1 relative">
-                <input type="text" name="q" value="{{ query or '' }}" placeholder="Search papers, hypotheses, topics..."
-                    class="w-full pl-9 pr-4 py-2.5 text-sm border border-scholar-300 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent shadow-sm transition">
-                <svg class="absolute left-3 top-3 w-4 h-4 text-scholar-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-            </div>
-            <button type="submit" class="px-5 py-2.5 bg-accent-600 text-white text-sm font-medium rounded-full hover:bg-accent-700 transition">Search</button>
+<div class="search-page">
+    <form action="/search" method="GET" x-data="{ showFilters: {% if domain or type_filter or status_filter %}true{% else %}false{% endif %} }">
+        <div class="search-bar">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" name="q" value="{{ query or '' }}" placeholder="Search papers, hypotheses, topics..." autofocus>
+            <button type="submit">Search</button>
         </div>
-        <div class="flex items-center mt-2">
-            <button type="button" @click="showFilters = !showFilters" class="text-xs text-scholar-400 hover:text-scholar-600 transition flex items-center gap-1">
-                <svg class="w-3 h-3 transition" :class="showFilters && 'rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                Advanced filters
+        <div style="margin-bottom:12px;">
+            <button type="button" @click="showFilters = !showFilters" style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:var(--text-quaternary);font-family:inherit;display:flex;align-items:center;gap:3px;">
+                <svg style="width:10px;height:10px;transition:transform 0.15s;" :style="showFilters && 'transform:rotate(90deg)'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                Filters
             </button>
         </div>
-        <div x-show="showFilters" x-cloak class="mt-3 flex flex-wrap gap-3">
+        <div x-show="showFilters" x-cloak class="search-filters">
             <div>
-                <label class="text-xs text-scholar-500 block mb-0.5">Domain</label>
-                <input type="text" name="domain" value="{{ domain or '' }}" placeholder="e.g. artificial_intelligence" class="px-3 py-1.5 text-xs border border-scholar-200 rounded-md focus:outline-none focus:ring-1 focus:ring-accent-500 w-44">
+                <label>Domain</label>
+                <input type="text" name="domain" value="{{ domain or '' }}" placeholder="e.g. artificial_intelligence" style="width:160px;">
             </div>
             <div>
-                <label class="text-xs text-scholar-500 block mb-0.5">Type</label>
-                <select name="type" class="px-3 py-1.5 text-xs border border-scholar-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-accent-500">
+                <label>Type</label>
+                <select name="type">
                     <option value="">All</option>
                     <option value="paper" {% if type_filter == 'paper' %}selected{% endif %}>Paper</option>
                     <option value="hypothesis" {% if type_filter == 'hypothesis' %}selected{% endif %}>Hypothesis</option>
                     <option value="meta_analysis" {% if type_filter == 'meta_analysis' %}selected{% endif %}>Meta Analysis</option>
                     <option value="rebuttal" {% if type_filter == 'rebuttal' %}selected{% endif %}>Rebuttal</option>
-                    <option value="tutorial" {% if type_filter == 'tutorial' %}selected{% endif %}>Tutorial</option>
                 </select>
             </div>
             <div>
-                <label class="text-xs text-scholar-500 block mb-0.5">Status</label>
-                <select name="status" class="px-3 py-1.5 text-xs border border-scholar-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-accent-500">
+                <label>Status</label>
+                <select name="status">
                     <option value="">All</option>
                     <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
                     <option value="under_review" {% if status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
@@ -48,61 +115,29 @@
         </div>
     </form>
 
-    <!-- Results -->
     {% if results is not none %}
-    <div class="text-xs text-scholar-400 mb-5">
-        About {{ results | length }} result{{ 's' if results | length != 1 else '' }}{% if query %} for <strong class="text-scholar-700">{{ query }}</strong>{% endif %}
-    </div>
+    <div class="search-count">About {{ results | length }} result{{ 's' if results | length != 1 else '' }}{% if query %} for <strong>{{ query }}</strong>{% endif %}</div>
     {% if results | length > 0 %}
-    <div class="space-y-7">
-        {% for r in results %}
-        <article>
-            <a href="/scroll/{{ r.scroll_id }}" class="text-base font-medium text-accent-600 hover:text-accent-700 hover:underline transition leading-snug">{{ r.title }}</a>
-            <div class="flex flex-wrap items-center gap-x-1.5 mt-0.5 text-xs text-scholar-500">
-                {% if r.authors %}
-                {% for a in r.authors %}
-                <span>{{ a[:12] }}{% if a|length > 12 %}...{% endif %}</span>{% if not loop.last %},{% endif %}
-                {% endfor %}
-                {% endif %}
-                {% if r.domain %}
-                <span class="text-scholar-300">-</span>
-                <span>{{ r.domain | replace('_', ' ') | title }}</span>
-                {% endif %}
-                {% if r.scroll_type %}
-                <span class="text-scholar-300">-</span>
-                <span class="capitalize">{{ r.scroll_type | replace('_', ' ') }}</span>
-                {% endif %}
-            </div>
-            {% if r.abstract %}
-            <p class="mt-1 text-sm text-scholar-600 leading-relaxed line-clamp-2">{{ r.abstract[:250] }}{% if r.abstract|length > 250 %}...{% endif %}</p>
-            {% endif %}
-            <div class="flex items-center gap-3 mt-1 text-xs text-scholar-400">
-                {% if r.citation_count %}
-                <span class="text-cite-600">Cited by {{ r.citation_count }}</span>
-                {% endif %}
-                {% if r.relevance_score %}
-                <span>Relevance: {{ '%.0f' | format(r.relevance_score * 100) }}%</span>
-                {% endif %}
-                <span class="font-mono text-scholar-300">{{ r.scroll_id }}</span>
-            </div>
-        </article>
-        {% endfor %}
+    {% for r in results %}
+    <div class="result-item">
+        <div class="result-title"><a href="/scroll/{{ r.scroll_id }}">{{ r.title }}</a></div>
+        <div class="result-meta">
+            {% if r.authors %}{% for a in r.authors %}<span>{{ a[:12] }}{% if a|length > 12 %}...{% endif %}</span>{% if not loop.last %}<span class="dot">&middot;</span>{% endif %}{% endfor %}{% endif %}
+            {% if r.domain %}<span class="dot">&middot;</span><span>{{ r.domain | replace('_', ' ') | title }}</span>{% endif %}
+        </div>
+        {% if r.abstract %}<div class="result-abstract">{{ r.abstract[:250] }}{% if r.abstract|length > 250 %}...{% endif %}</div>{% endif %}
+        <div class="result-badges">
+            {% if r.citation_count %}<span class="cite">Cited by {{ r.citation_count }}</span>{% endif %}
+            {% if r.relevance_score %}<span>{{ '%.0f' | format(r.relevance_score * 100) }}% match</span>{% endif %}
+            <span class="font-mono" style="color:var(--text-quaternary);font-size:0.68rem;">{{ r.scroll_id }}</span>
+        </div>
     </div>
+    {% endfor %}
     {% else %}
-    <div class="text-center py-16 text-scholar-400">
-        <p class="text-sm">No results found. Try different keywords or broaden your filters.</p>
-    </div>
+    <div class="empty-state">No results found. Try different keywords.</div>
     {% endif %}
-    {% endif %}
-
-    {% if results is none %}
-    <!-- Empty state before search -->
-    <div class="text-center py-16 text-scholar-400">
-        <svg class="w-10 h-10 mx-auto mb-3 text-scholar-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <p class="text-sm">Enter a query to search across all published research.</p>
-    </div>
+    {% elif results is none %}
+    <div class="empty-state">Enter a query to search across all research.</div>
     {% endif %}
 </div>
 {% endblock %}

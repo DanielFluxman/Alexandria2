@@ -3,223 +3,355 @@
 
 {% block head %}
 <style>
-    /* TOC active state */
-    .toc-link.active { color: #1a56db; font-weight: 500; }
+    .scroll-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 0;
+        max-width: 1100px;
+        margin: 0 auto;
+        min-height: calc(100vh - 48px);
+    }
+
+    /* TOC sidebar */
+    .toc {
+        position: sticky;
+        top: 48px;
+        height: calc(100vh - 48px);
+        overflow-y: auto;
+        padding: 24px 20px 24px 20px;
+        border-right: 1px solid var(--border-light);
+        font-size: 0.78rem;
+    }
+    .toc-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+        font-size: 0.82rem;
+        line-height: 1.3;
+    }
+    .toc-section {
+        margin-top: 12px;
+    }
+    .toc-section-title {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.78rem;
+        cursor: pointer;
+        padding: 2px 0;
+        user-select: none;
+    }
+    .toc-section-title:hover { color: var(--link); }
+    .toc-section-title.active { color: var(--link); }
+    .toc-section-title svg {
+        width: 10px; height: 10px;
+        color: var(--text-quaternary);
+        transition: transform 0.15s;
+        flex-shrink: 0;
+    }
+    .toc-sub {
+        padding-left: 18px;
+        margin-top: 2px;
+    }
+    .toc-sub a {
+        display: block;
+        padding: 2px 0;
+        color: var(--text-tertiary);
+        text-decoration: none;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+    .toc-sub a:hover { color: var(--link); }
+
+    /* Main content */
+    .scroll-main {
+        padding: 24px 40px 80px;
+        max-width: 720px;
+    }
+    .scroll-notice {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        color: var(--text-tertiary);
+        margin-bottom: 12px;
+    }
+    .scroll-notice svg { width: 12px; height: 12px; }
+    .scroll-main-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+        margin-bottom: 12px;
+    }
+    .scroll-authors {
+        font-size: 0.82rem;
+        color: var(--text-tertiary);
+        margin-bottom: 8px;
+    }
+    .scroll-authors a { color: var(--link); text-decoration: none; }
+    .scroll-authors a:hover { text-decoration: underline; }
+    .scroll-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .scroll-tags .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        font-size: 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        color: var(--text-tertiary);
+        text-decoration: none;
+    }
+    .scroll-tags .tag:hover { border-color: #ccc; color: var(--text-secondary); }
+
+    .scroll-abstract {
+        background: var(--bg-subtle);
+        border-left: 3px solid var(--text-primary);
+        padding: 14px 18px;
+        margin-bottom: 28px;
+        border-radius: 0 6px 6px 0;
+        font-size: 0.88rem;
+        line-height: 1.7;
+        color: var(--text-secondary);
+    }
+
+    .scroll-section-heading {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 32px 0 12px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .claim-card {
+        display: flex;
+        gap: 10px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        font-size: 0.82rem;
+    }
+    .claim-num {
+        flex-shrink: 0;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: var(--bg-hover);
+        color: var(--text-secondary);
+    }
+
+    .ref-list { list-style: decimal; padding-left: 20px; }
+    .ref-list li { margin-bottom: 4px; font-size: 0.82rem; }
+    .ref-list a { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+
+    /* Review card */
+    .review-card {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .review-header {
+        background: var(--bg-subtle);
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 0.82rem;
+    }
+    .review-body { padding: 16px; }
+    .review-scores {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 12px;
+    }
+    .review-score { text-align: center; }
+    .review-score-val { font-size: 1.1rem; font-weight: 600; }
+    .review-score-label { font-size: 0.65rem; color: var(--text-quaternary); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-light);
+        margin-bottom: 20px;
+        font-size: 0.78rem;
+    }
+    .meta-item { display: flex; flex-direction: column; gap: 1px; }
+    .meta-label { color: var(--text-quaternary); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .meta-value { color: var(--text-secondary); font-weight: 500; }
+
+    @media (max-width: 768px) {
+        .scroll-layout { grid-template-columns: 1fr; }
+        .toc { display: none; }
+        .scroll-main { padding: 20px; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
-    <div class="flex gap-8">
-        <!-- TOC Sidebar (desktop) -->
-        <aside class="hidden lg:block w-52 flex-shrink-0 sticky top-16 self-start max-h-[calc(100vh-5rem)] overflow-y-auto" id="toc-sidebar">
-            <div class="text-xs text-scholar-400 uppercase tracking-wider font-semibold mb-2">Contents</div>
-            <nav class="space-y-1 text-xs" id="toc-nav">
-                <a href="#abstract" class="block py-0.5 text-scholar-500 hover:text-accent-600 transition toc-link">Abstract</a>
-                <a href="#content" class="block py-0.5 text-scholar-500 hover:text-accent-600 transition toc-link">Full Text</a>
-                {% if scroll.claims %}
-                <a href="#claims" class="block py-0.5 text-scholar-500 hover:text-accent-600 transition toc-link">Claims</a>
-                {% endif %}
-                {% if scroll.references %}
-                <a href="#references" class="block py-0.5 text-scholar-500 hover:text-accent-600 transition toc-link">References</a>
-                {% endif %}
-                {% if reviews %}
-                <a href="#reviews" class="block py-0.5 text-scholar-500 hover:text-accent-600 transition toc-link">Peer Reviews ({{ reviews | length }})</a>
-                {% endif %}
-            </nav>
+<div class="scroll-layout">
+    <!-- TOC Sidebar -->
+    <aside class="toc">
+        <div class="toc-title" style="margin-bottom:12px;">{{ scroll.title[:50] }}{% if scroll.title|length > 50 %}...{% endif %}</div>
+        <div class="toc-section">
+            <a href="#abstract" class="toc-section-title">Abstract</a>
+        </div>
+        <div class="toc-section">
+            <a href="#content" class="toc-section-title">Full Text</a>
+        </div>
+        {% if scroll.claims %}
+        <div class="toc-section">
+            <a href="#claims" class="toc-section-title">Claims</a>
+        </div>
+        {% endif %}
+        {% if scroll.references %}
+        <div class="toc-section">
+            <a href="#references" class="toc-section-title">References</a>
+        </div>
+        {% endif %}
+        {% if reviews %}
+        <div class="toc-section">
+            <a href="#reviews" class="toc-section-title">Peer Reviews ({{ reviews | length }})</a>
+        </div>
+        {% endif %}
 
-            <!-- Metadata card -->
-            <div class="mt-6 pt-4 border-t border-scholar-100">
-                <div class="text-xs space-y-2 text-scholar-500">
+        <!-- Metadata -->
+        <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border-light);">
+            <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-quaternary);margin-bottom:8px;">Metadata</div>
+            <div style="font-size:0.75rem;color:var(--text-tertiary);line-height:1.8;">
+                <div><span style="color:var(--text-quaternary)">ID:</span> <span class="font-mono" style="font-size:0.7rem;">{{ scroll.scroll_id }}</span></div>
+                <div><span style="color:var(--text-quaternary)">Status:</span> <span class="badge {% if scroll.status == 'published' %}badge-green{% elif scroll.status == 'under_review' %}badge-amber{% elif scroll.status == 'retracted' %}badge-red{% else %}badge-gray{% endif %}">{{ scroll.status | replace('_', ' ') | title }}</span></div>
+                <div><span style="color:var(--text-quaternary)">Type:</span> {{ scroll.scroll_type | replace('_', ' ') | title }}</div>
+                {% if scroll.domain %}<div><span style="color:var(--text-quaternary)">Domain:</span> {{ scroll.domain | replace('_', ' ') | title }}</div>{% endif %}
+                <div><span style="color:var(--text-quaternary)">Version:</span> {{ scroll.version }}</div>
+                <div><span style="color:var(--text-quaternary)">Citations:</span> <span style="color:var(--green);font-weight:500;">{{ scroll.citation_count }}</span></div>
+                {% if scroll.evidence_grade and scroll.evidence_grade != 'ungraded' %}
+                <div><span style="color:var(--text-quaternary)">Evidence:</span> <span style="font-weight:600;">Grade {{ scroll.evidence_grade }}</span></div>
+                {% endif %}
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main article -->
+    <main class="scroll-main">
+        <!-- Status notice -->
+        <div class="scroll-notice">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            {{ scroll.status | replace('_', ' ') | title }} &middot; {{ scroll.scroll_type | replace('_', ' ') | title }} &middot; Version {{ scroll.version }}
+        </div>
+
+        <h1 class="scroll-main-title">{{ scroll.title }}</h1>
+
+        <div class="scroll-authors">
+            {% for aid in scroll.authors %}
+            <a href="/scholar/{{ aid }}">{{ aid }}</a>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if scroll.badges or scroll.keywords %}
+        <div class="scroll-tags">
+            {% for badge in scroll.badges %}
+            <span class="badge {% if badge == 'replicated' %}badge-green{% elif badge == 'artifact_complete' %}badge-blue{% else %}badge-gray{% endif %}">{{ badge | replace('_', ' ') | title }}</span>
+            {% endfor %}
+            {% for kw in scroll.keywords %}
+            <a href="/search?q={{ kw }}" class="tag">#{{ kw }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Abstract -->
+        <section id="abstract">
+            <div class="scroll-abstract">{{ scroll.abstract }}</div>
+        </section>
+
+        <!-- Content -->
+        <section id="content">
+            <div class="article-body">{{ scroll.content | markdown | safe }}</div>
+        </section>
+
+        <!-- Claims -->
+        {% if scroll.claims %}
+        <section id="claims">
+            <h2 class="scroll-section-heading">Claims</h2>
+            {% for claim in scroll.claims %}
+            <div class="claim-card">
+                <div class="claim-num">{{ loop.index }}</div>
+                <div>
+                    <div style="color:var(--text-secondary);">{{ claim.statement }}</div>
+                    <div style="font-size:0.7rem;color:var(--text-quaternary);margin-top:2px;text-transform:capitalize;">{{ claim.evidence_type or 'unspecified' }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- References -->
+        {% if scroll.references %}
+        <section id="references">
+            <h2 class="scroll-section-heading">References</h2>
+            <ol class="ref-list">
+                {% for ref in scroll.references %}
+                <li><a href="/scroll/{{ ref }}" class="link font-mono">{{ ref }}</a></li>
+                {% endfor %}
+            </ol>
+        </section>
+        {% endif %}
+
+        <!-- Reviews -->
+        {% if reviews %}
+        <section id="reviews">
+            <h2 class="scroll-section-heading">Peer Reviews</h2>
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
                     <div>
-                        <span class="text-scholar-400">ID</span>
-                        <div class="font-mono text-scholar-600">{{ scroll.scroll_id }}</div>
+                        <a href="/scholar/{{ review.reviewer_id }}" class="link" style="font-weight:500;">{{ review.reviewer_id[:20] }}...</a>
+                        <span style="color:var(--text-quaternary);margin-left:6px;">Round {{ review.review_round }}</span>
                     </div>
-                    <div>
-                        <span class="text-scholar-400">Status</span>
-                        <div>
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium
-                                {% if scroll.status == 'published' %}bg-green-50 text-green-700
-                                {% elif scroll.status == 'under_review' %}bg-amber-50 text-amber-700
-                                {% elif scroll.status == 'retracted' %}bg-red-50 text-red-700
-                                {% elif scroll.status == 'repro_check' %}bg-blue-50 text-blue-700
-                                {% else %}bg-scholar-100 text-scholar-600{% endif %}">
-                                {{ scroll.status | replace('_', ' ') | title }}
-                            </span>
+                    <span class="badge {% if review.recommendation == 'accept' %}badge-green{% elif review.recommendation == 'minor_revisions' %}badge-amber{% elif review.recommendation == 'major_revisions' %}badge-amber{% else %}badge-red{% endif %}">{{ review.recommendation | replace('_', ' ') | title }}</span>
+                </div>
+                <div class="review-body">
+                    {% set scores = review.scores if review.scores is mapping else {} %}
+                    <div class="review-scores">
+                        {% for label in ['originality', 'methodology', 'significance', 'clarity', 'overall'] %}
+                        <div class="review-score">
+                            <div class="review-score-val" style="color:{% if (scores[label] or 0) >= 7 %}var(--green){% elif (scores[label] or 0) >= 5 %}var(--amber){% else %}var(--red){% endif %}">{{ scores[label] or '-' }}</div>
+                            <div class="review-score-label">{{ label }}</div>
                         </div>
+                        {% endfor %}
                     </div>
-                    <div>
-                        <span class="text-scholar-400">Type</span>
-                        <div class="capitalize">{{ scroll.scroll_type | replace('_', ' ') }}</div>
-                    </div>
-                    {% if scroll.domain %}
-                    <div>
-                        <span class="text-scholar-400">Domain</span>
-                        <div>{{ scroll.domain | replace('_', ' ') | title }}</div>
-                    </div>
+                    {% if review.comments_to_authors %}
+                    <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;">{{ review.comments_to_authors }}</p>
                     {% endif %}
-                    <div>
-                        <span class="text-scholar-400">Version</span>
-                        <div>{{ scroll.version }}</div>
-                    </div>
-                    <div>
-                        <span class="text-scholar-400">Citations</span>
-                        <div class="text-cite-600 font-medium">{{ scroll.citation_count }}</div>
-                    </div>
-                    {% if scroll.evidence_grade and scroll.evidence_grade != 'ungraded' %}
-                    <div>
-                        <span class="text-scholar-400">Evidence</span>
-                        <div class="font-medium {% if scroll.evidence_grade == 'A' %}text-green-600{% elif scroll.evidence_grade == 'B' %}text-blue-600{% else %}text-scholar-600{% endif %}">Grade {{ scroll.evidence_grade }}</div>
+                    {% if review.suggested_edits %}
+                    <div style="margin-top:12px;">
+                        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-quaternary);margin-bottom:6px;">Suggested Edits</div>
+                        {% for edit in review.suggested_edits %}
+                        <div style="background:var(--bg-subtle);border:1px solid var(--border-light);border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:0.78rem;">
+                            <div style="font-weight:500;color:var(--text-secondary);margin-bottom:3px;">{{ edit.section if edit.section is string else edit.get('section', '') }}</div>
+                            <div style="color:var(--red);text-decoration:line-through;">{{ edit.original_text if edit.original_text is string else edit.get('original_text', '') }}</div>
+                            <div style="color:var(--green);margin-top:2px;">{{ edit.proposed_text if edit.proposed_text is string else edit.get('proposed_text', '') }}</div>
+                        </div>
+                        {% endfor %}
                     </div>
                     {% endif %}
                 </div>
             </div>
-        </aside>
-
-        <!-- Main article -->
-        <article class="flex-1 min-w-0 max-w-article">
-            <!-- Title block -->
-            <header class="mb-6 pb-6 border-b border-scholar-200">
-                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-scholar-900 leading-tight">{{ scroll.title }}</h1>
-                <div class="flex flex-wrap items-center gap-x-2 mt-3 text-sm text-scholar-500">
-                    {% for author_id in scroll.authors %}
-                    <a href="/scholar/{{ author_id }}" class="text-accent-600 hover:underline">{{ author_id }}</a>{% if not loop.last %}<span class="text-scholar-300">&middot;</span>{% endif %}
-                    {% endfor %}
-                </div>
-
-                <!-- Badges & Keywords -->
-                <div class="flex flex-wrap items-center gap-2 mt-3">
-                    {% if scroll.badges %}
-                    {% for badge in scroll.badges %}
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                        {% if badge == 'replicated' %}bg-green-50 text-green-700 border border-green-200
-                        {% elif badge == 'artifact_complete' %}bg-blue-50 text-blue-700 border border-blue-200
-                        {% else %}bg-scholar-50 text-scholar-600 border border-scholar-200{% endif %}">
-                        {{ badge | replace('_', ' ') | title }}
-                    </span>
-                    {% endfor %}
-                    {% endif %}
-                    {% if scroll.keywords %}
-                    {% for kw in scroll.keywords %}
-                    <a href="/search?q={{ kw }}" class="text-xs text-scholar-400 hover:text-accent-600 transition">#{{ kw }}</a>
-                    {% endfor %}
-                    {% endif %}
-                </div>
-
-                <!-- Mobile metadata -->
-                <div class="lg:hidden mt-4 flex flex-wrap gap-3 text-xs text-scholar-500">
-                    <span class="font-mono">{{ scroll.scroll_id }}</span>
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded font-medium
-                        {% if scroll.status == 'published' %}bg-green-50 text-green-700
-                        {% elif scroll.status == 'under_review' %}bg-amber-50 text-amber-700
-                        {% else %}bg-scholar-100 text-scholar-600{% endif %}">
-                        {{ scroll.status | replace('_', ' ') | title }}
-                    </span>
-                    <span>Cited by {{ scroll.citation_count }}</span>
-                </div>
-            </header>
-
-            <!-- Abstract -->
-            <section id="abstract" class="mb-8">
-                <h2 class="font-serif text-lg font-semibold text-scholar-800 mb-2">Abstract</h2>
-                <div class="bg-scholar-50 border-l-4 border-accent-500 px-4 py-3 text-sm text-scholar-700 leading-relaxed rounded-r">
-                    {{ scroll.abstract }}
-                </div>
-            </section>
-
-            <!-- Full text -->
-            <section id="content" class="mb-8">
-                <div class="article-body text-sm">{{ scroll.content | markdown | safe }}</div>
-            </section>
-
-            <!-- Claims -->
-            {% if scroll.claims %}
-            <section id="claims" class="mb-8">
-                <h2 class="font-serif text-lg font-semibold text-scholar-800 mb-3 pb-1 border-b border-scholar-200">Claims</h2>
-                <div class="space-y-2">
-                    {% for claim in scroll.claims %}
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-scholar-50 border border-scholar-100">
-                        <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold
-                            {% if claim.evidence_type == 'empirical' %}bg-blue-100 text-blue-700
-                            {% elif claim.evidence_type == 'theoretical' %}bg-purple-100 text-purple-700
-                            {% else %}bg-scholar-200 text-scholar-600{% endif %}">
-                            {{ loop.index }}
-                        </div>
-                        <div>
-                            <p class="text-sm text-scholar-700">{{ claim.statement }}</p>
-                            <span class="text-xs text-scholar-400 capitalize">{{ claim.evidence_type or 'unspecified' }}</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </section>
-            {% endif %}
-
-            <!-- References -->
-            {% if scroll.references %}
-            <section id="references" class="mb-8">
-                <h2 class="font-serif text-lg font-semibold text-scholar-800 mb-3 pb-1 border-b border-scholar-200">References</h2>
-                <ol class="list-decimal list-inside space-y-1 text-sm">
-                    {% for ref in scroll.references %}
-                    <li><a href="/scroll/{{ ref }}" class="text-accent-600 hover:underline font-mono text-xs">{{ ref }}</a></li>
-                    {% endfor %}
-                </ol>
-            </section>
-            {% endif %}
-
-            <!-- Peer Reviews -->
-            {% if reviews %}
-            <section id="reviews" class="mb-8">
-                <h2 class="font-serif text-lg font-semibold text-scholar-800 mb-4 pb-1 border-b border-scholar-200">Peer Reviews</h2>
-                <div class="space-y-5">
-                    {% for review in reviews %}
-                    <div class="border border-scholar-200 rounded-lg overflow-hidden">
-                        <div class="bg-scholar-50 px-4 py-2.5 flex items-center justify-between border-b border-scholar-100">
-                            <div class="flex items-center gap-2 text-sm">
-                                <a href="/scholar/{{ review.reviewer_id }}" class="font-medium text-accent-600 hover:underline">{{ review.reviewer_id[:16] }}...</a>
-                                <span class="text-xs text-scholar-400">Round {{ review.review_round }}</span>
-                            </div>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold
-                                {% if review.recommendation == 'accept' %}bg-green-50 text-green-700
-                                {% elif review.recommendation == 'minor_revisions' %}bg-amber-50 text-amber-700
-                                {% elif review.recommendation == 'major_revisions' %}bg-orange-50 text-orange-700
-                                {% else %}bg-red-50 text-red-700{% endif %}">
-                                {{ review.recommendation | replace('_', ' ') | title }}
-                            </span>
-                        </div>
-                        <div class="p-4">
-                            <!-- Score bar -->
-                            {% set scores = review.scores if review.scores is mapping else {} %}
-                            <div class="flex flex-wrap gap-4 mb-3">
-                                {% for label in ['originality', 'methodology', 'significance', 'clarity', 'overall'] %}
-                                <div class="text-center">
-                                    <div class="text-base font-bold {% if (scores[label] or 0) >= 7 %}text-green-600{% elif (scores[label] or 0) >= 5 %}text-amber-600{% else %}text-red-500{% endif %}">{{ scores[label] or '-' }}</div>
-                                    <div class="text-[10px] text-scholar-400 capitalize">{{ label }}</div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% if review.comments_to_authors %}
-                            <p class="text-sm text-scholar-600 leading-relaxed">{{ review.comments_to_authors }}</p>
-                            {% endif %}
-                            {% if review.suggested_edits %}
-                            <div class="mt-3 space-y-2">
-                                <h4 class="text-xs font-semibold text-scholar-400 uppercase">Suggested Edits</h4>
-                                {% for edit in review.suggested_edits %}
-                                <div class="text-xs bg-amber-50 border border-amber-100 rounded p-2.5">
-                                    <div class="font-medium text-amber-800 mb-1">{{ edit.section if edit.section is string else edit.get('section', '') }}</div>
-                                    <div class="text-red-500 line-through">{{ edit.original_text if edit.original_text is string else edit.get('original_text', '') }}</div>
-                                    <div class="text-green-700 mt-0.5">{{ edit.proposed_text if edit.proposed_text is string else edit.get('proposed_text', '') }}</div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </section>
-            {% endif %}
-        </article>
-    </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+    </main>
 </div>
 {% endblock %}
