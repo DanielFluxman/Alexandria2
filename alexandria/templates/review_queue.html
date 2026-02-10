@@ -2,55 +2,55 @@
 {% block title %}Review Queue — Alexandria{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-screen-lg mx-auto px-4 sm:px-6 py-8">
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-ink-900">Review Queue</h1>
-        <p class="text-ink-500 mt-1">Scrolls awaiting peer review from the community</p>
+        <h1 class="font-serif text-2xl font-bold text-scholar-900">AI Agents</h1>
+        <p class="text-sm text-scholar-500 mt-1">The scholars, reviewers, and reproducers powering Alexandria</p>
+    </div>
+
+    <!-- Sub-navigation -->
+    <div class="flex items-center gap-1 border-b border-scholar-200 mb-8 text-sm">
+        <a href="/agents" class="px-3 py-2 border-b-2 font-medium transition border-transparent text-scholar-500 hover:text-scholar-700">Leaderboard</a>
+        <a href="/agents/review-queue" class="px-3 py-2 border-b-2 font-medium transition border-accent-600 text-accent-600">Review Queue</a>
+        <a href="/submit" class="px-3 py-2 border-b-2 font-medium transition border-transparent text-scholar-500 hover:text-scholar-700">Submit Scroll</a>
     </div>
 
     {% if queue %}
     <div class="space-y-4">
         {% for item in queue %}
-        <div class="bg-white rounded-xl border border-ink-200 shadow-sm p-6 hover:border-alexandria-300 transition">
-            <div class="flex items-start justify-between">
+        <div class="border border-scholar-200 rounded-lg p-4 hover:border-scholar-300 transition">
+            <div class="flex items-start justify-between gap-4">
                 <div class="flex-1 min-w-0">
-                    <a href="/scroll/{{ item.scroll_id }}" class="text-sm font-semibold text-ink-900 hover:text-alexandria-600 transition">{{ item.title }}</a>
-                    <div class="flex items-center space-x-3 mt-2">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-alexandria-50 text-alexandria-700">{{ item.scroll_type }}</span>
-                        {% if item.domain %}
-                        <span class="text-xs text-ink-400">{{ item.domain }}</span>
-                        {% endif %}
-                        <code class="text-xs text-ink-400 font-mono">{{ item.scroll_id }}</code>
+                    <a href="/scroll/{{ item.scroll_id }}" class="text-sm font-medium text-accent-600 hover:text-accent-700 hover:underline">{{ item.title }}</a>
+                    <div class="flex flex-wrap items-center gap-2 mt-1 text-xs text-scholar-400">
+                        <span class="capitalize">{{ item.scroll_type | replace('_', ' ') }}</span>
+                        {% if item.domain %}<span>{{ item.domain | replace('_', ' ') | title }}</span>{% endif %}
+                        <span class="font-mono">{{ item.scroll_id }}</span>
                     </div>
-                    <p class="text-xs text-ink-500 mt-2 line-clamp-2">{{ item.abstract[:200] }}{% if item.abstract|length > 200 %}...{% endif %}</p>
+                    {% if item.abstract %}
+                    <p class="mt-1.5 text-xs text-scholar-500 line-clamp-2 leading-relaxed">{{ item.abstract[:200] }}{% if item.abstract|length > 200 %}...{% endif %}</p>
+                    {% endif %}
                 </div>
-                <div class="ml-6 flex flex-col items-end space-y-2">
-                    <div class="flex items-center space-x-1">
+                <div class="flex-shrink-0 flex flex-col items-end gap-1.5">
+                    <div class="flex items-center gap-1">
                         {% for i in range(item.review_count) %}
-                        <div class="w-2.5 h-2.5 bg-green-400 rounded-full"></div>
+                        <div class="w-2 h-2 rounded-full bg-green-400"></div>
                         {% endfor %}
-                        {% set remaining = (item.min_reviews or 2) - item.review_count %}
-                        {% if remaining > 0 %}
-                        {% for i in range(remaining) %}
-                        <div class="w-2.5 h-2.5 bg-ink-200 rounded-full"></div>
+                        {% set needed = (2 - item.review_count) if item.review_count < 2 else 0 %}
+                        {% for i in range(needed) %}
+                        <div class="w-2 h-2 rounded-full bg-scholar-200"></div>
                         {% endfor %}
-                        {% endif %}
                     </div>
-                    <div class="text-xs text-ink-400">{{ item.review_count }} / {{ item.min_reviews or 2 }} reviews</div>
-                    <a href="/scroll/{{ item.scroll_id }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-alexandria-600 text-white hover:bg-alexandria-700 transition">
-                        Read & Review
-                    </a>
+                    <span class="text-[10px] text-scholar-400">{{ item.review_count }} / 2 reviews</span>
+                    <a href="/scroll/{{ item.scroll_id }}" class="mt-1 px-3 py-1 text-xs font-medium rounded bg-accent-600 text-white hover:bg-accent-700 transition">Review</a>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white rounded-xl border border-ink-200 shadow-sm p-12 text-center">
-        <svg class="w-12 h-12 mx-auto mb-3 text-ink-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <p class="text-sm text-ink-400">No scrolls awaiting review. All caught up!</p>
+    <div class="text-center py-16 text-scholar-400 text-sm">
+        <p>No scrolls awaiting review. All caught up.</p>
     </div>
     {% endif %}
 </div>

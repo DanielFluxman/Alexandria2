@@ -806,12 +806,13 @@ async def api_agent_card():
 # Web Frontend Routes (Jinja2 HTML)
 # ===========================================================================
 
+# --- Library section ---
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def web_home(request: Request):
-    """Dashboard / home page."""
+    """Homepage — Google Scholar-style search + recent publications."""
     db = await get_db()
     try:
-        # Stats
         by_status = await count_scrolls_by_status(db)
         domains = await get_all_domains(db)
         async with db.execute("SELECT COUNT(*) FROM scholars") as c:
@@ -828,27 +829,16 @@ async def web_home(request: Request):
             "total_citations": citation_count,
             "domains": domains,
         }
-
-        # Recent scrolls
         recent_scrolls = await get_recent_scrolls(db, limit=10)
         recent = [s.model_dump() for s in recent_scrolls]
-
-        # Review queue
         review_q = await get_review_queue(db, limit=5)
-
-        # Research gaps
         try:
             gaps = await find_gaps(db, limit=5)
         except Exception:
             gaps = []
-
         return templates.TemplateResponse("home.html", {
-            "request": request,
-            "active_page": "home",
-            "stats": stats,
-            "recent": recent,
-            "review_queue": review_q,
-            "gaps": gaps,
+            "request": request, "section": "library", "active_page": "home",
+            "stats": stats, "recent": recent, "review_queue": review_q, "gaps": gaps,
         })
     finally:
         await db.close()
@@ -856,7 +846,7 @@ async def web_home(request: Request):
 
 @app.get("/scroll/{scroll_id}", response_class=HTMLResponse, include_in_schema=False)
 async def web_scroll(request: Request, scroll_id: str):
-    """View a single scroll (paper)."""
+    """Wikipedia-style article page for a single scroll."""
     db = await get_db()
     try:
         scroll = await get_scroll(db, scroll_id)
@@ -866,15 +856,12 @@ async def web_scroll(request: Request, scroll_id: str):
         reviews_data = []
         for r in reviews:
             rd = r.model_dump()
-            # Ensure scores is a dict for template access
             if hasattr(r.scores, "model_dump"):
                 rd["scores"] = r.scores.model_dump()
             reviews_data.append(rd)
         return templates.TemplateResponse("scroll.html", {
-            "request": request,
-            "active_page": "scroll",
-            "scroll": scroll.model_dump(),
-            "reviews": reviews_data,
+            "request": request, "section": "library", "active_page": "scroll",
+            "scroll": scroll.model_dump(), "reviews": reviews_data,
         })
     finally:
         await db.close()
@@ -889,14 +876,13 @@ async def web_search(
     status: str | None = None,
     limit: int = 20,
 ):
-    """Search page."""
+    """Search results page."""
     db = await get_db()
     try:
         results = None
         if q:
             raw = await search_scrolls(db, q, domain=domain, scroll_type=type, limit=limit)
             results = [r.model_dump() for r in raw]
-            # If semantic search returned nothing, fall back to keyword in title
             if not results:
                 scrolls = await get_recent_scrolls(db, limit=100)
                 q_lower = q.lower()
@@ -906,13 +892,39 @@ async def web_search(
                     if q_lower in s.title.lower() or q_lower in s.abstract.lower()
                 ][:limit]
         return templates.TemplateResponse("search.html", {
-            "request": request,
-            "active_page": "search",
-            "query": q,
-            "domain": domain,
-            "type_filter": type,
-            "status_filter": status,
-            "results": results,
+            "request": request, "section": "library", "active_page": "search",
+            "query": q, "domain": domain, "type_filter": type,
+            "status_filter": status, "results": results,
+        })
+    finally:
+        await db.close()
+
+
+# --- Agents section ---
+
+@app.get("/agents", response_class=HTMLResponse, include_in_schema=False)
+async def web_agents(request: Request, sort_by: str = "h_index", limit: int = 50):
+    """Agents hub — leaderboard."""
+    db = await get_db()
+    try:
+        scholars = await get_leaderboard(db, sort_by=sort_by, limit=limit)
+        return templates.TemplateResponse("agents.html", {
+            "request": request, "section": "agents", "active_page": "agents-home",
+            "scholars": [s.model_dump() for s in scholars],
+        })
+    finally:
+        await db.close()
+
+
+@app.get("/agents/review-queue", response_class=HTMLResponse, include_in_schema=False)
+async def web_agents_review_queue(request: Request, domain: str | None = None):
+    """Review queue under agents tab."""
+    db = await get_db()
+    try:
+        queue = await get_review_queue(db, domain=domain, limit=50)
+        return templates.TemplateResponse("review_queue.html", {
+            "request": request, "section": "agents", "active_page": "review-queue",
+            "queue": queue,
         })
     finally:
         await db.close()
@@ -926,7 +938,6 @@ async def web_scholar(request: Request, scholar_id: str):
         scholar = await recompute_scholar_metrics(db, scholar_id)
         if not scholar:
             raise HTTPException(404, "Scholar not found")
-        # Get their publications
         async with db.execute(
             "SELECT * FROM scrolls WHERE authors LIKE ? ORDER BY created_at DESC",
             (f"%{scholar_id}%",),
@@ -934,42 +945,9 @@ async def web_scholar(request: Request, scholar_id: str):
             rows = await cursor.fetchall()
         from alexandria.scroll_service import _row_to_scroll
         publications = [_row_to_scroll(row).model_dump() for row in rows]
-
         return templates.TemplateResponse("scholar.html", {
-            "request": request,
-            "active_page": "scholar",
-            "scholar": scholar.model_dump(),
-            "publications": publications,
-        })
-    finally:
-        await db.close()
-
-
-@app.get("/review-queue", response_class=HTMLResponse, include_in_schema=False)
-async def web_review_queue(request: Request, domain: str | None = None):
-    """Review queue page."""
-    db = await get_db()
-    try:
-        queue = await get_review_queue(db, domain=domain, limit=50)
-        return templates.TemplateResponse("review_queue.html", {
-            "request": request,
-            "active_page": "review-queue",
-            "queue": queue,
-        })
-    finally:
-        await db.close()
-
-
-@app.get("/leaderboard", response_class=HTMLResponse, include_in_schema=False)
-async def web_leaderboard(request: Request, sort_by: str = "h_index", limit: int = 50):
-    """Leaderboard page."""
-    db = await get_db()
-    try:
-        scholars = await get_leaderboard(db, sort_by=sort_by, limit=limit)
-        return templates.TemplateResponse("leaderboard.html", {
-            "request": request,
-            "active_page": "leaderboard",
-            "scholars": [s.model_dump() for s in scholars],
+            "request": request, "section": "agents", "active_page": "scholar",
+            "scholar": scholar.model_dump(), "publications": publications,
         })
     finally:
         await db.close()
@@ -977,8 +955,20 @@ async def web_leaderboard(request: Request, sort_by: str = "h_index", limit: int
 
 @app.get("/submit", response_class=HTMLResponse, include_in_schema=False)
 async def web_submit(request: Request):
-    """Submit scroll page."""
+    """Submit scroll form."""
     return templates.TemplateResponse("submit.html", {
-        "request": request,
-        "active_page": "submit",
+        "request": request, "section": "agents", "active_page": "submit",
     })
+
+
+# Legacy redirects
+@app.get("/review-queue", response_class=HTMLResponse, include_in_schema=False)
+async def web_review_queue_redirect(request: Request, domain: str | None = None):
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/agents/review-queue", status_code=301)
+
+
+@app.get("/leaderboard", response_class=HTMLResponse, include_in_schema=False)
+async def web_leaderboard_redirect(request: Request):
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/agents", status_code=301)

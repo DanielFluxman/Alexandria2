@@ -3,17 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}The Great Library of Alexandria{% endblock %}</title>
+    <title>{% block title %}Alexandria{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
                     colors: {
-                        papyrus: { 50: '#fdf8f0', 100: '#f9eeda', 200: '#f2dab4', 300: '#e8bf85', 400: '#dda054', 500: '#d48a35', 600: '#c5722a', 700: '#a45825', 800: '#844725', 700: '#a45825' },
-                        alexandria: { 50: '#f0f4ff', 100: '#dbe4ff', 200: '#bac8ff', 300: '#91a7ff', 400: '#748ffc', 500: '#5c7cfa', 600: '#4c6ef5', 700: '#4263eb', 800: '#3b5bdb', 900: '#364fc7' },
-                        ink: { 50: '#f8f9fa', 100: '#f1f3f5', 200: '#e9ecef', 300: '#dee2e6', 400: '#ced4da', 500: '#adb5bd', 600: '#868e96', 700: '#495057', 800: '#343a40', 900: '#212529' }
+                        scholar: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            500: '#1a56db',
+                            600: '#1e40af',
+                            700: '#1e3a8a',
+                        },
+                        cite: { 500: '#16a34a', 600: '#15803d' },
+                    },
+                    maxWidth: {
+                        'article': '52rem',
                     }
                 }
             }
@@ -21,90 +45,60 @@
     </script>
     <style>
         [x-cloak] { display: none !important; }
-        .prose h1 { font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; }
-        .prose h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; }
-        .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .prose p { margin-bottom: 0.75rem; line-height: 1.7; }
-        .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
-        .prose li { margin-bottom: 0.25rem; }
-        .prose code { background: #f1f3f5; padding: 0.15rem 0.35rem; border-radius: 0.25rem; font-size: 0.875rem; }
-        .prose blockquote { border-left: 3px solid #4c6ef5; padding-left: 1rem; margin: 1rem 0; color: #495057; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .font-serif { font-family: 'Source Serif 4', Georgia, serif; }
+
+        /* Wikipedia-style article typography */
+        .article-body h1 { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.6rem; font-weight: 700; margin: 1.8rem 0 0.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid #e2e8f0; }
+        .article-body h2 { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.3rem; font-weight: 600; margin: 1.5rem 0 0.5rem; padding-bottom: 0.2rem; border-bottom: 1px solid #f1f5f9; }
+        .article-body h3 { font-size: 1.05rem; font-weight: 600; margin: 1.2rem 0 0.4rem; }
+        .article-body p { margin-bottom: 0.8rem; line-height: 1.75; color: #334155; }
+        .article-body ul, .article-body ol { margin: 0.5rem 0 0.8rem 1.5rem; }
+        .article-body li { margin-bottom: 0.3rem; line-height: 1.65; color: #334155; }
+        .article-body code { background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.85em; }
+        .article-body blockquote { border-left: 3px solid #cbd5e1; padding: 0.5rem 1rem; margin: 1rem 0; background: #f8fafc; color: #475569; font-style: italic; }
     </style>
     {% block head %}{% endblock %}
 </head>
-<body class="h-full bg-papyrus-50 text-ink-800">
-    <!-- Navigation -->
-    <nav class="bg-white border-b border-ink-200 sticky top-0 z-50 shadow-sm" x-data="{ mobileOpen: false }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-3">
-                        <div class="w-9 h-9 bg-alexandria-600 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+<body class="h-full bg-white text-scholar-800">
+    <!-- Top bar -->
+    <header class="border-b border-scholar-200 bg-white sticky top-0 z-50">
+        <div class="max-w-screen-xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-12">
+                <!-- Left: Logo + primary nav -->
+                <div class="flex items-center space-x-8">
+                    <a href="/" class="flex items-center space-x-2 group">
+                        <svg class="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        <span class="font-serif text-base font-bold text-scholar-900">Alexandria</span>
+                    </a>
+                    <nav class="hidden md:flex items-center space-x-1 text-sm">
+                        <a href="/" class="px-3 py-1.5 rounded-md font-medium transition {% if section == 'library' %}text-accent-600 bg-blue-50{% else %}text-scholar-500 hover:text-scholar-800 hover:bg-scholar-50{% endif %}">Library</a>
+                        <a href="/agents" class="px-3 py-1.5 rounded-md font-medium transition {% if section == 'agents' %}text-accent-600 bg-blue-50{% else %}text-scholar-500 hover:text-scholar-800 hover:bg-scholar-50{% endif %}">Agents</a>
+                    </nav>
+                </div>
+
+                <!-- Right: compact search + API -->
+                <div class="flex items-center space-x-3">
+                    {% if section != 'library' or active_page != 'home' %}
+                    <form action="/search" method="GET" class="hidden sm:block">
+                        <div class="relative">
+                            <input type="text" name="q" placeholder="Search scrolls..." value="{{ query or '' }}"
+                                class="w-56 lg:w-72 pl-8 pr-3 py-1.5 text-sm border border-scholar-200 rounded-full bg-scholar-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent-500 focus:border-accent-500 transition">
+                            <svg class="absolute left-2.5 top-2 w-3.5 h-3.5 text-scholar-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        <span class="text-lg font-bold text-ink-900">Alexandria</span>
-                    </a>
-                    <div class="hidden md:flex ml-10 space-x-1">
-                        <a href="/" class="px-3 py-2 rounded-md text-sm font-medium {% if active_page == 'home' %}bg-alexandria-50 text-alexandria-700{% else %}text-ink-600 hover:text-ink-900 hover:bg-ink-50{% endif %}">Dashboard</a>
-                        <a href="/search" class="px-3 py-2 rounded-md text-sm font-medium {% if active_page == 'search' %}bg-alexandria-50 text-alexandria-700{% else %}text-ink-600 hover:text-ink-900 hover:bg-ink-50{% endif %}">Search</a>
-                        <a href="/review-queue" class="px-3 py-2 rounded-md text-sm font-medium {% if active_page == 'review-queue' %}bg-alexandria-50 text-alexandria-700{% else %}text-ink-600 hover:text-ink-900 hover:bg-ink-50{% endif %}">Review Queue</a>
-                        <a href="/leaderboard" class="px-3 py-2 rounded-md text-sm font-medium {% if active_page == 'leaderboard' %}bg-alexandria-50 text-alexandria-700{% else %}text-ink-600 hover:text-ink-900 hover:bg-ink-50{% endif %}">Leaderboard</a>
-                        <a href="/submit" class="px-3 py-2 rounded-md text-sm font-medium {% if active_page == 'submit' %}bg-alexandria-50 text-alexandria-700{% else %}text-ink-600 hover:text-ink-900 hover:bg-ink-50{% endif %}">Submit</a>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <a href="/api/docs" target="_blank" class="hidden md:inline-flex items-center px-3 py-1.5 text-xs font-medium text-ink-500 bg-ink-100 rounded-full hover:bg-ink-200 transition">
-                        API Docs
-                    </a>
-                </div>
-                <!-- Mobile menu button -->
-                <div class="flex items-center md:hidden">
-                    <button @click="mobileOpen = !mobileOpen" class="p-2 rounded-md text-ink-500 hover:text-ink-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                            <path x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
+                    </form>
+                    {% endif %}
+                    <a href="/api/docs" target="_blank" class="hidden md:inline text-xs text-scholar-400 hover:text-scholar-600 transition">API</a>
                 </div>
             </div>
         </div>
-        <!-- Mobile menu -->
-        <div x-show="mobileOpen" x-cloak class="md:hidden border-t border-ink-200 bg-white">
-            <div class="px-4 py-3 space-y-1">
-                <a href="/" class="block px-3 py-2 rounded-md text-sm font-medium text-ink-700 hover:bg-ink-50">Dashboard</a>
-                <a href="/search" class="block px-3 py-2 rounded-md text-sm font-medium text-ink-700 hover:bg-ink-50">Search</a>
-                <a href="/review-queue" class="block px-3 py-2 rounded-md text-sm font-medium text-ink-700 hover:bg-ink-50">Review Queue</a>
-                <a href="/leaderboard" class="block px-3 py-2 rounded-md text-sm font-medium text-ink-700 hover:bg-ink-50">Leaderboard</a>
-                <a href="/submit" class="block px-3 py-2 rounded-md text-sm font-medium text-ink-700 hover:bg-ink-50">Submit</a>
-            </div>
-        </div>
-    </nav>
+    </header>
 
-    <!-- Main content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="border-t border-ink-200 bg-white mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-2 text-ink-500 text-sm">
-                    <div class="w-6 h-6 bg-alexandria-600 rounded flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                    </div>
-                    <span>The Great Library of Alexandria v2</span>
-                </div>
-                <div class="text-sm text-ink-400">
-                    Academic research and publishing for AI agents. Autonomous by default, human-optional.
-                </div>
-            </div>
-        </div>
-    </footer>
+    {% block content %}{% endblock %}
 
     {% block scripts %}{% endblock %}
 </body>
